@@ -3,10 +3,10 @@
 --      Diamond Light Source, Oxford, UK
 --      SOLEIL Synchrotron, GIF-sur-YVETTE, France
 --
---  Author      : Gauthier THIBAUX
+--  Author      : Arthur Mariano
 --------------------------------------------------------------------------------
 --
---  Description : FMC 10G eth Loopback Design for transceiver 
+--  Description : FMC Loopback Design for transceiver 
 --
 --                This module must be used with techway FMC-SFP/SFP+_104
 --                                
@@ -24,7 +24,7 @@ library work;
 use work.support.all;
 use work.top_defines.all;
 
-entity fmc_10g_eth_exdes_wrapper is
+entity fmc_hpc_sfp_10G_lback_wrapper is
 port (
     -- DO NOT EDIT BELOW THIS LINE ---------------------
     -- Standard FMC Block ports, do not add to or delete
@@ -48,59 +48,49 @@ port (
     FMC_o               : out fmc_output_interface
 
 );
-end fmc_10g_eth_exdes_wrapper;
+end fmc_hpc_sfp_10G_lback_wrapper;
 
-architecture rtl of fmc_10g_eth_exdes_wrapper is
+architecture rtl of fmc_hpc_sfp_10G_lback_wrapper is
 
-signal FMC_HB20_P           : std_logic;
-signal FMC_HB20_N           : std_logic;
-signal FMC_HB21_P           : std_logic;
-signal FMC_HB21_N           : std_logic;
-signal I2C_SDA              : std_logic;
+signal clock_en             : std_logic;
+signal LINK_UP_1            : std_logic_vector(31 downto 0);
+signal LINK_UP_2            : std_logic_vector(31 downto 0);
+signal LINK_UP_3            : std_logic_vector(31 downto 0);
+signal ERROR_COUNT_1        : std_logic_vector(31 downto 0);
+signal ERROR_COUNT_2        : std_logic_vector(31 downto 0);
+signal ERROR_COUNT_3        : std_logic_vector(31 downto 0);
+signal FMC_HB20_P			: std_logic;
+signal FMC_HB20_N			: std_logic;
+signal FMC_HB21_P			: std_logic;
+signal FMC_HB21_N			: std_logic;
+signal I2C_SDA            	: std_logic;
 signal I2C_SDA_OE           : std_logic;
 signal I2C_SDA_IN           : std_logic;
 signal I2C_SDA_OUT          : std_logic;
-signal I2C_SDA_C            : std_logic;
+signal I2C_SDA_C           	: std_logic;
 signal I2C_SDA_OE_C         : std_logic;
 signal I2C_SDA_IN_C         : std_logic;
 signal I2C_SDA_OUT_C        : std_logic;
-signal TX_FAULT             : std_logic_vector(31 downto 0);
-signal RX_LOS               : std_logic_vector(31 downto 0);
-signal TX_DISABLE_1         : std_logic_vector(31 downto 0);
+signal TX_FAULT				: std_logic_vector(31 downto 0);
+signal RX_LOS				: std_logic_vector(31 downto 0);
+signal TX_DISABLE_1			: std_logic_vector(31 downto 0);
 signal TX_DISABLE_1_WSTB    : std_logic;
-signal TX_DISABLE_2         : std_logic_vector(31 downto 0);
+signal TX_DISABLE_2			: std_logic_vector(31 downto 0);
 signal TX_DISABLE_2_WSTB    : std_logic;
-signal TX_DISABLE_3         : std_logic_vector(31 downto 0);
+signal TX_DISABLE_3			: std_logic_vector(31 downto 0);
 signal TX_DISABLE_3_WSTB    : std_logic;
-signal SEL_RATE             : std_logic_vector(31 downto 0);
-signal SEL_RATE_WSTB        : std_logic;
-signal APPLY_SFP            : std_logic;
-signal APPLY_FREQ           : std_logic;
+signal SEL_RATE				: std_logic_vector(31 downto 0);
+signal SEL_RATE_WSTB   	    : std_logic;
+signal APPLY_SFP			: std_logic;
+signal APPLY_FREQ     		: std_logic;
 signal FREQUENCY_VALUE      : std_logic_vector(31 downto 0);
-signal I2C_BUSY             : std_logic_vector(31 downto 0); 
-signal I2C_END_TRANSFER     : std_logic_vector(31 downto 0);
-signal I2C_ERROR_STATUS     : std_logic_vector(31 downto 0);
+signal I2C_BUSY        			: std_logic_vector(31 downto 0); 
+signal I2C_END_TRANSFER			: std_logic_vector(31 downto 0);
+signal I2C_ERROR_STATUS			: std_logic_vector(31 downto 0);
 signal FMC_PRSNT_DW         : std_logic_vector(31 downto 0);
 signal SOFT_RESET           : std_logic;
-
-signal PCS_LOOPBACK           : std_logic_vector(31 downto 0);
-signal RESET_ERROR            : std_logic_vector(31 downto 0);
-signal INSERT_ERROR           : std_logic_vector(31 downto 0);
-signal ENABLE_PAT_GEN         : std_logic_vector(31 downto 0);
-signal ENABLE_PAT_CHECK       : std_logic_vector(31 downto 0);
-signal ADDRESS_SWAP_ENABLE    : std_logic_vector(31 downto 0);
-signal SIM_SPEEDUP_CONTROL    : std_logic_vector(31 downto 0);
-signal ENABLE_CUSTOM_PREAMBLE : std_logic_vector(31 downto 0);
-signal FRAME_ERROR            : std_logic_vector(31 downto 0);
-signal ERRORED_DATA           : std_logic_vector(31 downto 0);
-signal ERRORED_ADDR           : std_logic_vector(31 downto 0);
-signal ERRORED_PREAMBLE       : std_logic_vector(31 downto 0);
-
-signal GEN_ACTIVE             : std_logic_vector(31 downto 0);
-signal CHECK_ACTIVE     : std_logic_vector(31 downto 0);
-signal CORE_READY             : std_logic_vector(31 downto 0);
-signal QPLLLOCK_OUT           : std_logic_vector(31 downto 0);
-
+signal LOOP_PERIOD_WSTB     : std_logic;
+signal LOOP_PERIOD          : std_logic_vector(31 downto 0);
 
 signal TXN                 : std_logic;
 signal TXP                 : std_logic;
@@ -130,7 +120,7 @@ component I2C_Status is
     I2C_SDA_IN              : in    STD_LOGIC;      -- I2C Data in
     I2C_SDA_OUT             : out   STD_LOGIC;      -- I2C Data out
     I2C_SDA_OE              : out   STD_LOGIC       -- I2C Data oe (set high to output otherwise output is Z)
-    );
+	);
 end component;
 
 component I2C_Command is
@@ -155,52 +145,18 @@ component I2C_Command is
     FREQUENCY_VALUE   : in  std_logic_vector(14 downto 0);    -- Frequency value by step of 10KHz, frequency range from 5000(dec) (50MHz) to 28000(dec) (280MHz)
   
   -- Status
-    BUSY              : out std_logic;      -- Assign high when the controller is busy
-    END_TRANSFER      : out std_logic;      -- Assign high during one clock cycle when a complete access (Rd or Wr) has been performed
-    ERROR_STATUS      : out std_logic_vector(1 downto 0);      -- Error code assigned during the END_TRANSFER. 0 => no Error, 1 => Access I2C error, 2 => EEPROM integrity error, 3 => FREQUENCY_VALUE is out of range
-                                      
+	BUSY              : out std_logic;      -- Assign high when the controller is busy
+	END_TRANSFER      : out std_logic;      -- Assign high during one clock cycle when a complete access (Rd or Wr) has been performed
+	ERROR_STATUS      : out std_logic_vector(1 downto 0);      -- Error code assigned during the END_TRANSFER. 0 => no Error, 1 => Access I2C error, 2 => EEPROM integrity error, 3 => FREQUENCY_VALUE is out of range
+	                                  
   -- I2C interface          
     I2C_SCL           : out std_logic;      -- I2C Clock
     I2C_SDA_IN        : in  std_logic;      -- I2C Data in
     I2C_SDA_OUT       : out std_logic;      -- I2C Data out
     I2C_SDA_OE        : out std_logic       -- I2C Data oe (set high to output otherwise output is Z)
-    );
+	);
 end component;
 
-component axi_10g_eth_example_design is
-  port (
---   // Clock inputs
-     clk_in : in std_logic;       --// Freerunning clock source
-     refclk : in std_logic;       --// Transceiver reference clock source
-     coreclk_out : out std_logic;       --
---   // Example design control inputs
-     pcs_loopback : in std_logic;       --
-     reset : in std_logic;       --
-     reset_error : in std_logic;       --
-     insert_error : in std_logic;       --
-     enable_pat_gen : in std_logic;       --
-     enable_pat_check : in std_logic;       --
-     address_swap_enable : in std_logic; 
-     serialized_stats : out std_logic;       --
-     sim_speedup_control : in std_logic;       --
-     enable_custom_preamble : in std_logic;       --
---   // Example design status outputs
-    frame_error : out std_logic; 
-    errored_data : out std_logic;     
-    errored_addr : out std_logic;   
-    errored_preamble : out std_logic; 
-    
-    gen_active : out std_logic; 
-    check_active : out std_logic; 
-    core_ready : out std_logic; 
-    qplllock_out : out std_logic; 
---   // Serial I/O from/to transceiver
-    txp : out std_logic; 
-    txn : out std_logic; 
-    rxp : in std_logic; 
-    rxn : in std_logic 
-    );
-end component;
 
 begin
 
@@ -215,42 +171,42 @@ port map (
     I => TXP,
     O => FMC_o.TXP_OUT
 );
---only on one for now
---txnobuf2 : obuf
---port map (
---    I => TXN2,
---    O => FMC_o.TXN2_OUT
---);
---
---txpobuf2 : obuf
---port map (
---    I => TXP2,
---    O => FMC_o.TXP2_OUT
---);
---
---txnobuf3 : obuf
---port map (
---    I => TXN3,
---    O => FMC_o.TXN3_OUT
---);
---
---txpobuf3 : obuf
---port map (
---    I => TXP3,
---    O => FMC_o.TXP3_OUT
---);
---
---txnobuf4 : obuf
---port map (
---    I => TXN4,
---    O => FMC_o.TXN4_OUT
---);
---
---txpobuf4 : obuf
---port map (
---    I => TXP4,
---    O => FMC_o.TXP4_OUT
---);
+
+txnobuf2 : obuf
+port map (
+    I => TXN2,
+    O => FMC_o.TXN2_OUT
+);
+
+txpobuf2 : obuf
+port map (
+    I => TXP2,
+    O => FMC_o.TXP2_OUT
+);
+
+txnobuf3 : obuf
+port map (
+    I => TXN3,
+    O => FMC_o.TXN3_OUT
+);
+
+txpobuf3 : obuf
+port map (
+    I => TXP3,
+    O => FMC_o.TXP3_OUT
+);
+
+txnobuf4 : obuf
+port map (
+    I => TXN4,
+    O => FMC_o.TXN4_OUT
+);
+
+txpobuf4 : obuf
+port map (
+    I => TXP4,
+    O => FMC_o.TXP4_OUT
+);
 
 -- Acknowledgement to AXI Lite interface
 write_ack_o <= '1';
@@ -264,44 +220,83 @@ port map (
     DELAY_i     => RD_ADDR2ACK
 );
 
+-- Multiplex read data out from multiple instantiations
 
----------------------------------------------------------------------------
--- axi_10g_eth_example_design
----------------------------------------------------------------------------
-axi_10g_eth_example_design_i1 : axi_10g_eth_example_design
+-- Generate prescaled clock for internal counter
+frame_presc : entity work.prescaler
 port map (
-    clk_in                 => clk_i,
-    refclk                 => FMC_i.GTREFCLK_156MHz25,--must be 156.25Mhz 
-    coreclk_out            => open,
-    
-    --control inputs
-    pcs_loopback           => PCS_LOOPBACK(0),
-    reset                  => SOFT_RESET,
-    reset_error            => RESET_ERROR(0),
-    insert_error           => INSERT_ERROR(0),
-    enable_pat_gen         => ENABLE_PAT_GEN(0),
-    enable_pat_check       => ENABLE_PAT_CHECK(0),
-    address_swap_enable    => ADDRESS_SWAP_ENABLE(0),
-    serialized_stats       => open,
-    sim_speedup_control    => SIM_SPEEDUP_CONTROL(0),
-    enable_custom_preamble => ENABLE_CUSTOM_PREAMBLE(0),
-    
-    --status outputs
-    frame_error            => FRAME_ERROR(0),
-    errored_data           => ERRORED_DATA(0),    
-    errored_addr           => ERRORED_ADDR(0),   
-    errored_preamble       => ERRORED_PREAMBLE(0),
-    gen_active             => GEN_ACTIVE(0),
-    check_active           => CHECK_ACTIVE(0),
-    core_ready             => CORE_READY(0),
-    qplllock_out           => QPLLLOCK_OUT(0),
-    
-    rxp                    => FMC_i.RXP_IN,
-    rxn                    => FMC_i.RXN_IN,
-    txp                    => TXP,
-    txn                    => TXN
-    );
+    clk_i       => clk_i,
+    reset_i     => LOOP_PERIOD_WSTB,
+    PERIOD      => LOOP_PERIOD,
+    pulse_o     => clock_en
+);
 
+---------------------------------------------------------------------------
+-- GTX Loopback Test
+---------------------------------------------------------------------------
+fmcgtx_10g_exdes_i1 : entity work.fmcgtx_10G_exdes
+port map (
+    Q0_CLK1_GTREFCLK_PAD_IN     => FMC_i.GTREFCLK,
+    --Q0_CLK1_GTREFCLK_PAD_P_IN   => FMC_i.GTREFCLK_P,
+    --Q0_CLK1_GTREFCLK_PAD_N_IN   => FMC_i.GTREFCLK_N,
+    DRP_CLK_IN                 => clk_i,
+    --SOFT_RESET                  => SOFT_RESET,
+    --TRACK_DATA_OUT              => LINK_UP_1,
+    LINK_UP                     => LINK_UP_1,
+    ERROR_COUNT                 => ERROR_COUNT_1,
+    RXP_IN                      => FMC_i.RXP_IN,
+    RXN_IN                      => FMC_i.RXN_IN,
+    TXP_OUT                     => TXP,
+    TXN_OUT                     => TXN
+);
+
+--fmcgtx_10g_exdes_i2 : entity work.fmcgtx_10G_exdes
+--port map (
+--    --Q0_CLK1_GTREFCLK_PAD_IN     => FMC_i.GTREFCLK,
+--    Q0_CLK1_GTREFCLK_PAD_P_IN   => FMC_i.GTREFCLK_P,
+--    Q0_CLK1_GTREFCLK_PAD_N_IN   => FMC_i.GTREFCLK_N,
+--    DRP_CLK_IN                 => clk_i,
+--    --SOFT_RESET                  => SOFT_RESET,
+--    --TRACK_DATA_OUT              => LINK_UP_2,
+--    LINK_UP                     => LINK_UP_2,
+--    ERROR_COUNT                 => ERROR_COUNT_2,
+--    RXP_IN                      => FMC_i.RXP2_IN,
+--    RXN_IN                      => FMC_i.RXN2_IN,
+--    TXP_OUT                     => TXP2,
+--    TXN_OUT                     => TXN2
+--);
+--
+--fmcgtx_10g_exdes_i3 : entity work.fmcgtx_10G_exdes
+--port map (
+--    --Q0_CLK1_GTREFCLK_PAD_IN     => FMC_i.GTREFCLK,
+--    Q0_CLK1_GTREFCLK_PAD_P_IN   => FMC_i.GTREFCLK_P,
+--    Q0_CLK1_GTREFCLK_PAD_N_IN   => FMC_i.GTREFCLK_N,
+--    DRP_CLK_IN                 => clk_i,
+--    --SOFT_RESET                  => SOFT_RESET,
+--    --TRACK_DATA_OUT              => LINK_UP_3,
+--    LINK_UP                     => LINK_UP_3,
+--    ERROR_COUNT                 => ERROR_COUNT_3,
+--    RXP_IN                      => FMC_i.RXP3_IN,
+--    RXN_IN                      => FMC_i.RXN3_IN,
+--    TXP_OUT                     => TXP3,
+--    TXN_OUT                     => TXN3
+--);
+--
+--fmcgtx_10g_exdes_i4 : entity work.fmcgtx_10G_exdes
+--port map (
+--    --Q0_CLK1_GTREFCLK_PAD_IN     => FMC_i.GTREFCLK,
+--    Q0_CLK1_GTREFCLK_PAD_P_IN   => FMC_i.GTREFCLK_P,
+--    Q0_CLK1_GTREFCLK_PAD_N_IN   => FMC_i.GTREFCLK_N,
+--    DRP_CLK_IN                 => clk_i,
+--    --SOFT_RESET                  => SOFT_RESET,
+--    --TRACK_DATA_OUT              => open,
+--    LINK_UP                     => open,
+--    ERROR_COUNT                 => open,
+--    RXP_IN                      => FMC_i.RXP4_IN,
+--    RXN_IN                      => FMC_i.RXN4_IN,
+--    TXP_OUT                     => TXP4,
+--    TXN_OUT                     => TXN4
+--);
 
 ---------------------------------------------------------------------------
 -- I2C STATUS
@@ -313,7 +308,10 @@ I2C_SDA		<= FMC_HB20_P;
 I2C_SDA		<= I2C_SDA_OUT when (I2C_SDA_OE = '1') else 'Z';
 I2C_SDA_IN 	<= I2C_SDA;
 PULLUP_I2C_SDA: PULLUP port map (I2C_SDA);
-
+--FMC_io.FMC_HB_P(21) 	<= I2C_SDA_OUT when (I2C_SDA_OE = '1') else 'Z';
+--I2C_SDA_IN 				<= FMC_io.FMC_HB_P(21);
+--PULLUP_I2C_SDA: PULLUP port map (FMC_io.FMC_HB_P(21));
+ 
 i2c_stat: I2C_Status 
 port map( 
  -- Generic parameters, set by a constant or stable signal only
@@ -347,6 +345,9 @@ I2C_SDA_C		<= FMC_HB21_P;
 I2C_SDA_C		<= I2C_SDA_OUT_C when (I2C_SDA_OE_C = '1') else 'Z';
 I2C_SDA_IN_C	<= I2C_SDA_C;
 PULLUP_I2C_SDA_C: PULLUP port map (I2C_SDA_C);
+--FMC_io.FMC_HB_P(20) 	<= I2C_SDA_OUT_C when (I2C_SDA_OE_C = '1') else 'Z';
+--I2C_SDA_IN_C			<= FMC_io.FMC_HB_P(20);
+--PULLUP_I2C_SDA_C: PULLUP port map (FMC_io.FMC_HB_P(20));
 
 i2c_comman: I2C_Command 
 port map( 
@@ -356,22 +357,27 @@ port map(
     G_DEFAULT_FREQUENCY_OSCILLATOR_10KHz  => 12500,               --: in integer range 5000 to 28000 := 12500;  -- Default frequency of programmable oscillator modulo 10KHz. By default, the oscillator will be programmed with this frequency value
 
   -- Common signals
-    RESET             => reset_i,               -- Asynchronous reset, active high 
-    CLOCK             => clk_i,                 -- Clock   
+    RESET             => reset_i,           	-- Asynchronous reset, active high 
+    CLOCK             => clk_i,             	-- Clock   
+								
   -- SFP Command part	
-    APPLY_SFP         => APPLY_SFP,             -- Set high during one clock cycle to apply the SFP commands (SEL_RATE & TX_DISABLE)
-    SEL_RATE          => SEL_RATE(0),           -- Assign high to select the bandwidth of all SFP to 2.125Gb/s to 4.5Gb/s otherwise assign low to select a lower bandwidth
+    APPLY_SFP         => APPLY_SFP,         	-- Set high during one clock cycle to apply the SFP commands (SEL_RATE & TX_DISABLE)
+						
+    SEL_RATE          => SEL_RATE(0),          	-- Assign high to select the bandwidth of all SFP to 2.125Gb/s to 4.5Gb/s otherwise assign low to select a lower bandwidth
     TX_DISABLE(0)     => TX_DISABLE_1(0),       -- [3:0] Assign high to disable the transmission on each SFP individually
-    TX_DISABLE(1)     => TX_DISABLE_2(0), 
-    TX_DISABLE(2)     => TX_DISABLE_3(0),       
-    TX_DISABLE(3)     => '1',                   -- no SFP4 for FMC-SFP/SFP+_104
+	TX_DISABLE(1)     => TX_DISABLE_2(0), 
+	TX_DISABLE(2)     => TX_DISABLE_3(0), 		
+	TX_DISABLE(3) 	  => '1',					-- no SFP4 for FMC-SFP/SFP+_104
+				 
   -- SFP Command part	
-    APPLY_FREQ        => APPLY_FREQ,                    --: in  std_logic;                        -- Set high during one clock cycle to change the oscillator frequency
-    FREQUENCY_VALUE   => FREQUENCY_VALUE(14 downto 0),  --: in  std_logic_vector(14 downto 0);    -- Frequency value by step of 10KHz, frequency range from 5000(dec) (50MHz) to 28000(dec) (280MHz)
+    APPLY_FREQ        => APPLY_FREQ,        	--: in  std_logic;                        -- Set high during one clock cycle to change the oscillator frequency
+    FREQUENCY_VALUE   => FREQUENCY_VALUE(14 downto 0),   	--: in  std_logic_vector(14 downto 0);    -- Frequency value by step of 10KHz, frequency range from 5000(dec) (50MHz) to 28000(dec) (280MHz)
+  
   -- Status
-    BUSY              => I2C_BUSY(0),                  --: out std_logic;                        -- Assign high when the controller is busy
-    END_TRANSFER      => I2C_END_TRANSFER(0),          --: out std_logic;                        -- Assign high during one clock cycle when a complete access (Rd or Wr) has been performed
-    ERROR_STATUS      => I2C_ERROR_STATUS(1 downto 0), --: out std_logic_vector(1 downto 0);     -- Error code assigned during the END_TRANSFER. 0 => no Error, 1 => Access I2C error, 2 => EEPROM integrity error, 3 => FREQUENCY_VALUE is out of range
+	BUSY              => I2C_BUSY(0),              	--: out std_logic;                        -- Assign high when the controller is busy
+	END_TRANSFER      => I2C_END_TRANSFER(0),      	--: out std_logic;                        -- Assign high during one clock cycle when a complete access (Rd or Wr) has been performed
+	ERROR_STATUS      => I2C_ERROR_STATUS(1 downto 0),      	--: out std_logic_vector(1 downto 0);     -- Error code assigned during the END_TRANSFER. 0 => no Error, 1 => Access I2C error, 2 => EEPROM integrity error, 3 => FREQUENCY_VALUE is out of range
+	                                  
   -- I2C interface          
     I2C_SCL           => FMC_HB21_N,         	-- I2C Clock
     I2C_SDA_IN        => I2C_SDA_IN_C,        	-- I2C Data in
@@ -383,8 +389,6 @@ I2C_BUSY(31 downto 1) 			<= ZEROS(31);
 I2C_END_TRANSFER(31 downto 1)	<= ZEROS(31);
 I2C_ERROR_STATUS(31 downto 2)	<= ZEROS(30);
 
-SIM_SPEEDUP_CONTROL    <= (others=>'0');
-
 FREQUENCY_VALUE <= ZEROS(32);
 APPLY_FREQ <= '0';
 ---------------------------------------------------------------------------
@@ -392,7 +396,7 @@ APPLY_FREQ <= '0';
 ---------------------------------------------------------------------------
 FMC_PRSNT_DW <= ZEROS(31) & FMC_i.FMC_PRSNT;
 
-fmc_ctrl : entity work.fmc_10g_eth_exdes_ctrl
+fmc_ctrl : entity work.fmc_hpc_sfp_10G_lback_ctrl
 port map (
     -- Clock and Reset
     clk_i               => clk_i,
@@ -401,39 +405,28 @@ port map (
     pos_bus_i           => pos_bus_i,
     -- Block Parameters
     FMC_PRSNT           => FMC_PRSNT_DW,
-    TX_FAULT            => TX_FAULT,
-    RX_LOS              => RX_LOS,
-    TX_DISABLE_1        => TX_DISABLE_1,
-    TX_DISABLE_1_WSTB   => TX_DISABLE_1_WSTB,
-    TX_DISABLE_2        => TX_DISABLE_2,
-    TX_DISABLE_2_WSTB   => TX_DISABLE_2_WSTB,
-    TX_DISABLE_3        => TX_DISABLE_3,
-    TX_DISABLE_3_WSTB   => TX_DISABLE_3_WSTB,
+    LINK_UP_1           => LINK_UP_1,
+    LINK_UP_2           => LINK_UP_2,
+    LINK_UP_3           => LINK_UP_3,
+    ERROR_COUNT_1       => ERROR_COUNT_1,
+    ERROR_COUNT_2       => ERROR_COUNT_2,
+    ERROR_COUNT_3       => ERROR_COUNT_3,
+    TX_FAULT			=> TX_FAULT,
+    RX_LOS				=> RX_LOS,
+    TX_DISABLE_1		=> TX_DISABLE_1,
+    TX_DISABLE_1_WSTB	=> TX_DISABLE_1_WSTB,
+    TX_DISABLE_2		=> TX_DISABLE_2,
+    TX_DISABLE_2_WSTB	=> TX_DISABLE_2_WSTB,
+    TX_DISABLE_3		=> TX_DISABLE_3,
+    TX_DISABLE_3_WSTB	=> TX_DISABLE_3_WSTB,
     SEL_RATE            => SEL_RATE,
     SEL_RATE_WSTB       => SEL_RATE_WSTB,
-    I2C_BUSY            => I2C_BUSY,
-    I2C_ERROR_STATUS    => I2C_ERROR_STATUS,
+    I2C_BUSY				=> I2C_BUSY,
+    I2C_ERROR_STATUS		=> I2C_ERROR_STATUS,
     SOFT_RESET          => open,
     SOFT_RESET_WSTB     => SOFT_RESET,
-    --control inputs of example design
-    PCS_LOOPBACK           => PCS_LOOPBACK,
-    RESET_ERROR            => RESET_ERROR,
-    INSERT_ERROR           => INSERT_ERROR,
-    ENABLE_PAT_GEN         => ENABLE_PAT_GEN,
-    ENABLE_PAT_CHECK       => ENABLE_PAT_CHECK,
-    ADDRESS_SWAP_ENABLE    => ADDRESS_SWAP_ENABLE,
-    ENABLE_CUSTOM_PREAMBLE => ENABLE_CUSTOM_PREAMBLE,
-    --status outputs of example design
-    FRAME_ERROR            => FRAME_ERROR,
-    ERRORED_DATA           => ERRORED_DATA,    
-    ERRORED_ADDR           => ERRORED_ADDR,   
-    ERRORED_PREAMBLE       => ERRORED_PREAMBLE,
-    
-    GEN_ACTIVE             => GEN_ACTIVE,
-    CHECK_ACTIVE           => CHECK_ACTIVE,
-    CORE_READY             => CORE_READY,
-    QPLLLOCK_OUT           => QPLLLOCK_OUT,
-    
+    LOOP_PERIOD         => LOOP_PERIOD,
+    LOOP_PERIOD_WSTB    => LOOP_PERIOD_WSTB,
     -- Memory Bus Interface
     read_strobe_i       => read_strobe_i,
     read_address_i      => read_address_i(BLK_AW-1 downto 0),
