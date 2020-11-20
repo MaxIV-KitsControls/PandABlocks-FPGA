@@ -57,7 +57,7 @@ BITS_PREREQ += carrier_fpga
 
 #####################################################################
 # BUILD TARGETS includes HW and SW
-fpga-all: fpga-bits boot
+fpga-all: fpga-bits boot user-leds
 fpga-bits: $(BITS_PREREQ)
 carrier_ip: $(IP_DIR)/IP_BUILD_SUCCESS
 ps_core: $(PS_CORE)
@@ -65,7 +65,7 @@ devicetree : $(DEVTREE_DTB)
 fsbl : $(FSBL)
 boot : $(IMAGE_DIR)/boot.bin
 u-boot: $(U_BOOT_ELF)
-.PHONY: fpga-all fpga-bits carrier_ip ps_core boot devicetree fsbl u-boot
+.PHONY: fpga-all fpga-bits carrier_ip ps_core boot devicetree fsbl u-boot user-leds
 
 #####################################################################
 # Compiler variables needed for u-boot build and other complitation
@@ -193,7 +193,12 @@ $(HWDEF): $(PS_CORE)
 
 $(DEVTREE_SRC) : 
 	mkdir -p $(DEVTREE_BSP)
-	unzip $(TAR_REPO)/$(DEVTREE_NAME).zip -d $(DEVTREE_BSP)
+#	if [ -f $(TAR_REPO)/$(DEVTREE_NAME).tar.gz ]; then \
+#      tar xzf $(TAR_REPO)/$(DEVTREE_NAME).tar.gz -C $(DEVTREE_BSP) \
+#    elif [ -f $(TAR_REPO)/$(DEVTREE_NAME).zip ]; then \
+#      unzip $(TAR_REPO)/$(DEVTREE_NAME).zip -d $(DEVTREE_BSP) \
+#    fi
+	tar xzf $(TAR_REPO)/$(DEVTREE_NAME).tar.gz -C $(DEVTREE_BSP)
 
 $(IMAGE_DIR) : 
 	mkdir $(IMAGE_DIR)
@@ -202,6 +207,9 @@ $(IMAGE_DIR) :
 
 dts: $(DEVTREE_DTB)
 	$(DEVTREE_DTC) -f -I dtb -O dts -o $(IMAGE_DIR)/devicetree.dts $<
+
+user-leds:
+	cp $(TARGET_DIR)/user-leds $(IMAGE_DIR)/
 
 sw_clean:
 	rm -rf $(SDK_EXPORT)

@@ -1,6 +1,6 @@
 # Directory structure
 d share/panda-fpga/config_d
-d share/designs/PANDA
+d share/template_designs
 d share/www
 d lib/python/site-packages/i2c
 d etc/www
@@ -14,8 +14,7 @@ b share/panda-fpga ipmi.ini
 
 # Server startup and helper code
 B share/panda-fpga extensions
-t share/panda-fpga targets/PandABox/etc/load-panda-firmware
-b bin/slow ../../targets/PandABox/slow_load
+t share/panda-fpga targets/ZedBoard/etc/load-panda-firmware
 
 # IPMI python support
 T lib/python/site-packages/i2c etc/i2c/*.py
@@ -24,9 +23,8 @@ t bin etc/show_ipmi
 
 # Firmware
 b share/panda-fpga FPGA/panda_top.bit
-b share/panda-fpga ../../targets/PandABox/SlowFPGA/slow_top.bin
 
 # Docs (built once for all zpkgs)
 t etc/www etc/panda-fpga.docs.html
-T share/designs/PANDA docs/tutorials/*.json
+T share/template_designs docs/tutorials/*.json
 B share/www/panda-fpga ../../html
