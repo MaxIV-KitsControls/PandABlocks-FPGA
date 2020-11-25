@@ -21,7 +21,7 @@ library work;
 use work.addr_defines.all; -- NEEDED?
 use work.top_defines.all;  -- NEEDED?
 
-entity ZedBoard_top is
+entity zc706_top is
 generic (
     SIM                 : string  := "FALSE";
     AXI_ADDR_WIDTH      : integer := 32;
@@ -67,9 +67,9 @@ port (
     FMC_CLK1_M2C_P      : in    std_logic;
     FMC_CLK1_M2C_N      : in    std_logic
 );
-end ZedBoard_top;
+end zc706_top;
 
-architecture rtl of ZedBoard_top is
+architecture rtl of zc706_top is
 
 -- Zynq PS Block
 signal FCLK_CLK0            : std_logic;
@@ -499,7 +499,7 @@ port map(
 );
 
 
-zed_demo_inst : entity work.zedboard_demo_top
+zed_demo_inst : entity work.zc706_demo_top
 port map(
     clk_i => FCLK_CLK0,
 

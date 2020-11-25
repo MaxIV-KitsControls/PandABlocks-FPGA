@@ -1,11 +1,11 @@
 set FPGA_PART xc7z045ffg900-2
 set BOARD_PART "xilinx.com:zc706:part0:1.2"
-set HDL_TOP ZedBoard_top
+set HDL_TOP zc706_top
 
 # Target specific Constriants to be read
 # NB: we could just read the entire directory with 'add_files [glob $TARGET_DIR/const/*.xdc]
 set CONSTRAINTS { \
-            ZedBoard-pins_impl.xdc
+            zc706-pins_impl.xdc
 }
             
 # Target specific 'hardware' blocks to be read.
