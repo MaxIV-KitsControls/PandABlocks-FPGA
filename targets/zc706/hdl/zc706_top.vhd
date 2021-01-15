@@ -52,11 +52,11 @@ port (
     FIXED_IO_ps_porb    : inout std_logic;
     FIXED_IO_ps_srstb   : inout std_logic;
 
-	--zc706 I/Os
+	--Zedboard I/Os
 	btnR : in std_logic;
 	btnC : in std_logic;
 	btnL : in std_logic;
-	led : out std_logic_vector(3 downto 0) := X"aa";
+	led : out std_logic_vector(3 downto 0) := (others => '0');
 	SW : in std_logic_vector(3 downto 0); 
 
     FMC_PRSNT           : in    std_logic;
@@ -454,7 +454,8 @@ bit_bus(BIT_BUS_SIZE-1 downto 0 ) <= pcap_active;
 
 -- Assemble FMC records
 --FMC_i.EXTCLK <= EXTCLK;
-FMC_i.FMC_PRSNT <= FMC_PRSNT;
+-- FMC_i.FMC_PRSNT <= FMC_PRSNT;
+FMC_i.FMC_PRSNT <= '0';
 FMC_io.FMC_LA_P <= FMC_LA_P;
 FMC_io.FMC_LA_N <= FMC_LA_N;
 FMC_io.FMC_CLK0_M2C_P <= FMC_CLK0_M2C_P;
@@ -503,15 +504,15 @@ zed_demo_inst : entity work.zc706_demo_top
 port map(
     clk_i => FCLK_CLK0,
 
-    read_strobe_i       => read_strobe(ZEDBOARD_DEMO_CS),
+    read_strobe_i       => read_strobe(ZC706_DEMO_CS),
     read_address_i      => read_address,
-    read_data_o         => read_data(ZEDBOARD_DEMO_CS),
-    read_ack_o          => read_ack(ZEDBOARD_DEMO_CS),
+    read_data_o         => read_data(ZC706_DEMO_CS),
+    read_ack_o          => read_ack(ZC706_DEMO_CS),
 
-    write_strobe_i      => write_strobe(ZEDBOARD_DEMO_CS),
+    write_strobe_i      => write_strobe(ZC706_DEMO_CS),
     write_address_i     => write_address,
     write_data_i        => write_data,
-    write_ack_o         => write_ack(ZEDBOARD_DEMO_CS),
+    write_ack_o         => write_ack(ZC706_DEMO_CS),
 
 	led => led,
 	SW => SW

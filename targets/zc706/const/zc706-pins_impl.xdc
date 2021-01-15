@@ -3,7 +3,7 @@
 # -------------------------------------------------------------------
 # FMC Differential Pins
 # -------------------------------------------------------------------
-set_property PACKAGE_PIN AG17   [get_ports {FMC_PRSNT     }];
+# set_property PACKAGE_PIN AB2  [get_ports {FMC_PRSNT     }];
 set_property PACKAGE_PIN AH12   [get_ports {FMC_LA_N[3]   }];
 set_property PACKAGE_PIN AG12   [get_ports {FMC_LA_P[3]   }];
 set_property PACKAGE_PIN AD13   [get_ports {FMC_LA_N[8]   }];
@@ -77,52 +77,70 @@ set_property PACKAGE_PIN AG17   [get_ports {FMC_CLK0_M2C_P}];
 set_property PACKAGE_PIN AD28   [get_ports {FMC_CLK1_M2C_N}];
 set_property PACKAGE_PIN AC28   [get_ports {FMC_CLK1_M2C_P}];
 
+
+set_property IOSTANDARD LVCMOS25 [get_ports FMC_LA_N]
+set_property IOSTANDARD LVCMOS25 [get_ports FMC_LA_P]
+set_property IOSTANDARD LVCMOS25 [get_ports {FMC_CLK0_M2C_N}];
+set_property IOSTANDARD LVCMOS25 [get_ports {FMC_CLK0_M2C_P}];
+set_property IOSTANDARD LVCMOS25 [get_ports {FMC_CLK1_M2C_N}];
+set_property IOSTANDARD LVCMOS25 [get_ports {FMC_CLK1_M2C_P}];
+
 # -------------------------------------------------------------------
 # SFP MGT - Bank 112
 # -------------------------------------------------------------------
 
-set_property PACKAGE_PIN Y6   [get_ports {SFP_RX_P[0]  }];   #SFP_rx
-set_property PACKAGE_PIN Y5   [get_ports {SFP_RX_N[0]  }];   #SFP_rx
-set_property PACKAGE_PIN W4   [get_ports {SFP_TX_P[0]  }];   #SFP_tx
-set_property PACKAGE_PIN W3   [get_ports {SFP_TX_N[0]  }];   #SFP_tx
+#set_property PACKAGE_PIN Y6   [get_ports {SFP_RX_P[0]  }];   #SFP_rx
+#set_property PACKAGE_PIN Y5   [get_ports {SFP_RX_N[0]  }];   #SFP_rx
+#set_property PACKAGE_PIN W4   [get_ports {SFP_TX_P[0]  }];   #SFP_tx
+#set_property PACKAGE_PIN W3   [get_ports {SFP_TX_N[0]  }];   #SFP_tx
 
 
 # ----------------------------------------------------------------------------
 # User LEDs - Bank 33
 # ---------------------------------------------------------------------------- 
 set_property PACKAGE_PIN Y21 [get_ports {led[0]}];  # "LD0"
+set_property IOSTANDARD LVCMOS25 [get_ports {led[0]}]
 set_property PACKAGE_PIN G2 [get_ports {led[1]}];  # "LD1"
+set_property IOSTANDARD LVCMOS15 [get_ports {led[1]}]
 set_property PACKAGE_PIN W21 [get_ports {led[2]}];  # "LD2"
+set_property IOSTANDARD LVCMOS25 [get_ports {led[2]}]
 set_property PACKAGE_PIN A17 [get_ports {led[3]}];  # "LD3"
+set_property IOSTANDARD LVCMOS15 [get_ports {led[3]}]
 
 # ----------------------------------------------------------------------------
 # User Push Buttons - Bank 34
 # ---------------------------------------------------------------------------- 
-set_property PACKAGE_PIN AK25 [get_ports {btnR}];  # "BTNR"
+set_property PACKAGE_PIN AK25 [get_ports {btnL}];  # "BTNR"
+set_property IOSTANDARD LVCMOS25 [get_ports {btnL}]
 set_property PACKAGE_PIN K15 [get_ports {btnC}];  # "BTNC"
-set_property PACKAGE_PIN R27 [get_ports {BTNL}];  # "BTNL"
+set_property IOSTANDARD LVCMOS15 [get_ports {btnC}]
+set_property PACKAGE_PIN R27 [get_ports {btnR}];  # "BTNL"
+set_property IOSTANDARD LVCMOS25 [get_ports {btnR}]
 
 ## ----------------------------------------------------------------------------
 ## User DIP Switches - Bank 35
 ## ---------------------------------------------------------------------------- 
 set_property PACKAGE_PIN AB17 [get_ports {SW[0]}];  # "SW0"
+set_property IOSTANDARD LVCMOS25 [get_ports {SW[0]}]
 set_property PACKAGE_PIN AC16 [get_ports {SW[1]}];  # "SW1"
+set_property IOSTANDARD LVCMOS25 [get_ports {SW[1]}]
 set_property PACKAGE_PIN AC17 [get_ports {SW[2]}];  # "SW2"
+set_property IOSTANDARD LVCMOS25 [get_ports {SW[2]}]
 set_property PACKAGE_PIN AJ13 [get_ports {SW[3]}];  # "SW3"
+set_property IOSTANDARD LVCMOS25 [get_ports {SW[3]}]
 
 
 # -------------------------------------------------------------------
 # IOSTANDARD VCCOIO Constraints
 # -------------------------------------------------------------------
 # Set the bank voltage for IO Bank 34 to 1.8V by default.
-set_property IOSTANDARD LVCMOS18 [get_ports -of_objects [get_iobanks 34]];
+#set_property IOSTANDARD LVCMOS18 [get_ports -of_objects [get_iobanks 34]];
 # Set the bank voltage for IO Bank 35 to 1.8V by default.
-set_property IOSTANDARD LVCMOS18 [get_ports -of_objects [get_iobanks 35]];
+#set_property IOSTANDARD LVCMOS18 [get_ports -of_objects [get_iobanks 35]];
 # Set the bank voltage for IO Bank 33 to 3.3V by default.
-set_property IOSTANDARD LVCMOS33 [get_ports -of_objects [get_iobanks 33]];
-
+#set_property IOSTANDARD LVCMOS33 [get_ports -of_objects [get_iobanks 33]];
 # Note that the bank voltage for IO Bank 13 is fixed to 3.3V on ZedBoard. 
-set_property IOSTANDARD LVCMOS33 [get_ports -of_objects [get_iobanks 13]];
+#set_property IOSTANDARD LVCMOS33 [get_ports -of_objects [get_iobanks 13]];
 
 # -------------------------------------------------------------------
 # Override Differential Pairs' IOSTANDARD
